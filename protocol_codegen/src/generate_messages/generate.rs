@@ -1276,15 +1276,23 @@ impl PreparedStruct {
 
         write!(w, "impl Message for {} ", self.name)?;
         w.block(|w| {
-            let range = self.valid_versions
-                .range()
-                .expect("Valid versions should be bounded.");
-            writeln!(
-                w,
-                "const VERSIONS: VersionRange = VersionRange {{ min: {}, max: {} }};",
-                range.start(),
-                range.end()
-            )?;
+            if let Some(range) = self.valid_versions
+                .range() {
+                writeln!(
+                    w,
+                    "const VERSIONS: VersionRange = VersionRange {{ min: {}, max: {} }};",
+                    range.start(),
+                    range.end()
+                )?;
+            } else {
+                writeln!(
+                    w,
+                    "const VERSIONS: VersionRange = VersionRange {{ min: {}, max: {} }};",
+                    0,
+                    0,
+                )?;
+            }
+
             if let Some(range) = self.deprecated_versions.range() {
                 writeln!(
                     w,

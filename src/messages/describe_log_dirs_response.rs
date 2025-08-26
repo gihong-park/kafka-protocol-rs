@@ -378,12 +378,12 @@ pub struct DescribeLogDirsResult {
     /// Supported API versions: 1-4
     pub topics: Vec<DescribeLogDirsTopic>,
 
-    /// The total size in bytes of the volume the log directory is in.
+    /// The total size in bytes of the volume the log directory is in. This value does not include the size of data stored in remote storage.
     ///
     /// Supported API versions: 4
     pub total_bytes: i64,
 
-    /// The usable size in bytes of the volume the log directory is in.
+    /// The usable size in bytes of the volume the log directory is in. This value does not include the size of data stored in remote storage.
     ///
     /// Supported API versions: 4
     pub usable_bytes: i64,
@@ -422,7 +422,7 @@ impl DescribeLogDirsResult {
     }
     /// Sets `total_bytes` to the passed value.
     ///
-    /// The total size in bytes of the volume the log directory is in.
+    /// The total size in bytes of the volume the log directory is in. This value does not include the size of data stored in remote storage.
     ///
     /// Supported API versions: 4
     pub fn with_total_bytes(mut self, value: i64) -> Self {
@@ -431,7 +431,7 @@ impl DescribeLogDirsResult {
     }
     /// Sets `usable_bytes` to the passed value.
     ///
-    /// The usable size in bytes of the volume the log directory is in.
+    /// The usable size in bytes of the volume the log directory is in. This value does not include the size of data stored in remote storage.
     ///
     /// Supported API versions: 4
     pub fn with_usable_bytes(mut self, value: i64) -> Self {

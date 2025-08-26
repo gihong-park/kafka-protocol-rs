@@ -1,6 +1,6 @@
-//! AddRaftVoterResponse
+//! ListConfigResourcesRequest
 //!
-//! See the schema for this message [here](https://github.com/apache/kafka/blob/trunk/clients/src/main/resources/common/message/AddRaftVoterResponse.json).
+//! See the schema for this message [here](https://github.com/apache/kafka/blob/trunk/clients/src/main/resources/common/message/ListConfigResourcesRequest.json).
 // WARNING: the items of this module are generated and should not be edited directly
 #![allow(unused)]
 
@@ -20,52 +20,24 @@ use crate::protocol::{
 /// Valid versions: 0-1
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
-pub struct AddRaftVoterResponse {
-    /// The duration in milliseconds for which the request was throttled due to a quota violation, or zero if the request did not violate any quota.
+pub struct ListConfigResourcesRequest {
+    /// The list of resource type. If the list is empty, it uses default supported config resource types.
     ///
-    /// Supported API versions: 0-1
-    pub throttle_time_ms: i32,
-
-    /// The error code, or 0 if there was no error.
-    ///
-    /// Supported API versions: 0-1
-    pub error_code: i16,
-
-    /// The error message, or null if there was no error.
-    ///
-    /// Supported API versions: 0-1
-    pub error_message: Option<StrBytes>,
+    /// Supported API versions: 1
+    pub resource_types: Vec<i8>,
 
     /// Other tagged fields
     pub unknown_tagged_fields: BTreeMap<i32, Bytes>,
 }
 
-impl AddRaftVoterResponse {
-    /// Sets `throttle_time_ms` to the passed value.
+impl ListConfigResourcesRequest {
+    /// Sets `resource_types` to the passed value.
     ///
-    /// The duration in milliseconds for which the request was throttled due to a quota violation, or zero if the request did not violate any quota.
+    /// The list of resource type. If the list is empty, it uses default supported config resource types.
     ///
-    /// Supported API versions: 0-1
-    pub fn with_throttle_time_ms(mut self, value: i32) -> Self {
-        self.throttle_time_ms = value;
-        self
-    }
-    /// Sets `error_code` to the passed value.
-    ///
-    /// The error code, or 0 if there was no error.
-    ///
-    /// Supported API versions: 0-1
-    pub fn with_error_code(mut self, value: i16) -> Self {
-        self.error_code = value;
-        self
-    }
-    /// Sets `error_message` to the passed value.
-    ///
-    /// The error message, or null if there was no error.
-    ///
-    /// Supported API versions: 0-1
-    pub fn with_error_message(mut self, value: Option<StrBytes>) -> Self {
-        self.error_message = value;
+    /// Supported API versions: 1
+    pub fn with_resource_types(mut self, value: Vec<i8>) -> Self {
+        self.resource_types = value;
         self
     }
     /// Sets unknown_tagged_fields to the passed value.
@@ -80,15 +52,19 @@ impl AddRaftVoterResponse {
     }
 }
 
-#[cfg(feature = "broker")]
-impl Encodable for AddRaftVoterResponse {
+#[cfg(feature = "client")]
+impl Encodable for ListConfigResourcesRequest {
     fn encode<B: ByteBufMut>(&self, buf: &mut B, version: i16) -> Result<()> {
         if version < 0 || version > 1 {
             bail!("specified version not supported by this message type");
         }
-        types::Int32.encode(buf, &self.throttle_time_ms)?;
-        types::Int16.encode(buf, &self.error_code)?;
-        types::CompactString.encode(buf, &self.error_message)?;
+        if version >= 1 {
+            types::CompactArray(types::Int8).encode(buf, &self.resource_types)?;
+        } else {
+            if !self.resource_types.is_empty() {
+                bail!("A field is set that is not available on the selected protocol version");
+            }
+        }
         let num_tagged_fields = self.unknown_tagged_fields.len();
         if num_tagged_fields > std::u32::MAX as usize {
             bail!(
@@ -103,9 +79,13 @@ impl Encodable for AddRaftVoterResponse {
     }
     fn compute_size(&self, version: i16) -> Result<usize> {
         let mut total_size = 0;
-        total_size += types::Int32.compute_size(&self.throttle_time_ms)?;
-        total_size += types::Int16.compute_size(&self.error_code)?;
-        total_size += types::CompactString.compute_size(&self.error_message)?;
+        if version >= 1 {
+            total_size += types::CompactArray(types::Int8).compute_size(&self.resource_types)?;
+        } else {
+            if !self.resource_types.is_empty() {
+                bail!("A field is set that is not available on the selected protocol version");
+            }
+        }
         let num_tagged_fields = self.unknown_tagged_fields.len();
         if num_tagged_fields > std::u32::MAX as usize {
             bail!(
@@ -120,15 +100,17 @@ impl Encodable for AddRaftVoterResponse {
     }
 }
 
-#[cfg(feature = "client")]
-impl Decodable for AddRaftVoterResponse {
+#[cfg(feature = "broker")]
+impl Decodable for ListConfigResourcesRequest {
     fn decode<B: ByteBuf>(buf: &mut B, version: i16) -> Result<Self> {
         if version < 0 || version > 1 {
             bail!("specified version not supported by this message type");
         }
-        let throttle_time_ms = types::Int32.decode(buf)?;
-        let error_code = types::Int16.decode(buf)?;
-        let error_message = types::CompactString.decode(buf)?;
+        let resource_types = if version >= 1 {
+            types::CompactArray(types::Int8).decode(buf)?
+        } else {
+            Default::default()
+        };
         let mut unknown_tagged_fields = BTreeMap::new();
         let num_tagged_fields = types::UnsignedVarInt.decode(buf)?;
         for _ in 0..num_tagged_fields {
@@ -138,32 +120,28 @@ impl Decodable for AddRaftVoterResponse {
             unknown_tagged_fields.insert(tag as i32, unknown_value);
         }
         Ok(Self {
-            throttle_time_ms,
-            error_code,
-            error_message,
+            resource_types,
             unknown_tagged_fields,
         })
     }
 }
 
-impl Default for AddRaftVoterResponse {
+impl Default for ListConfigResourcesRequest {
     fn default() -> Self {
         Self {
-            throttle_time_ms: 0,
-            error_code: 0,
-            error_message: Some(Default::default()),
+            resource_types: Default::default(),
             unknown_tagged_fields: BTreeMap::new(),
         }
     }
 }
 
-impl Message for AddRaftVoterResponse {
+impl Message for ListConfigResourcesRequest {
     const VERSIONS: VersionRange = VersionRange { min: 0, max: 1 };
     const DEPRECATED_VERSIONS: Option<VersionRange> = None;
 }
 
-impl HeaderVersion for AddRaftVoterResponse {
+impl HeaderVersion for ListConfigResourcesRequest {
     fn header_version(version: i16) -> i16 {
-        1
+        2
     }
 }

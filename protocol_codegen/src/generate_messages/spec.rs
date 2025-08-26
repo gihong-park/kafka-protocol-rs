@@ -139,7 +139,7 @@ impl VersionSpec {
         match self {
             VersionSpec::None => VersionSpec::None,
             VersionSpec::Since(_) => VersionSpec::None,
-            VersionSpec::Exact(_) => VersionSpec::None,
+            VersionSpec::Exact(a) => VersionSpec::Exact(*a),
             VersionSpec::Range(a, b) => {
                 if a == b {
                     VersionSpec::None

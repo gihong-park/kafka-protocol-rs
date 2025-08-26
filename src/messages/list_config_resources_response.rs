@@ -1,6 +1,6 @@
-//! AddRaftVoterRequest
+//! ListConfigResourcesResponse
 //!
-//! See the schema for this message [here](https://github.com/apache/kafka/blob/trunk/clients/src/main/resources/common/message/AddRaftVoterRequest.json).
+//! See the schema for this message [here](https://github.com/apache/kafka/blob/trunk/clients/src/main/resources/common/message/ListConfigResourcesResponse.json).
 // WARNING: the items of this module are generated and should not be edited directly
 #![allow(unused)]
 
@@ -20,94 +20,38 @@ use crate::protocol::{
 /// Valid versions: 0-1
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
-pub struct AddRaftVoterRequest {
-    /// The cluster id.
+pub struct ConfigResource {
+    /// The resource name.
     ///
     /// Supported API versions: 0-1
-    pub cluster_id: Option<StrBytes>,
+    pub resource_name: StrBytes,
 
-    /// The maximum time to wait for the request to complete before returning.
-    ///
-    /// Supported API versions: 0-1
-    pub timeout_ms: i32,
-
-    /// The replica id of the voter getting added to the topic partition.
-    ///
-    /// Supported API versions: 0-1
-    pub voter_id: i32,
-
-    /// The directory id of the voter getting added to the topic partition.
-    ///
-    /// Supported API versions: 0-1
-    pub voter_directory_id: Uuid,
-
-    /// The endpoints that can be used to communicate with the voter.
-    ///
-    /// Supported API versions: 0-1
-    pub listeners: Vec<Listener>,
-
-    /// When true, return a response after the new voter set is committed. Otherwise, return after the leader writes the changes locally.
+    /// The resource type.
     ///
     /// Supported API versions: 1
-    pub ack_when_committed: bool,
+    pub resource_type: i8,
 
     /// Other tagged fields
     pub unknown_tagged_fields: BTreeMap<i32, Bytes>,
 }
 
-impl AddRaftVoterRequest {
-    /// Sets `cluster_id` to the passed value.
+impl ConfigResource {
+    /// Sets `resource_name` to the passed value.
     ///
-    /// The cluster id.
-    ///
-    /// Supported API versions: 0-1
-    pub fn with_cluster_id(mut self, value: Option<StrBytes>) -> Self {
-        self.cluster_id = value;
-        self
-    }
-    /// Sets `timeout_ms` to the passed value.
-    ///
-    /// The maximum time to wait for the request to complete before returning.
+    /// The resource name.
     ///
     /// Supported API versions: 0-1
-    pub fn with_timeout_ms(mut self, value: i32) -> Self {
-        self.timeout_ms = value;
+    pub fn with_resource_name(mut self, value: StrBytes) -> Self {
+        self.resource_name = value;
         self
     }
-    /// Sets `voter_id` to the passed value.
+    /// Sets `resource_type` to the passed value.
     ///
-    /// The replica id of the voter getting added to the topic partition.
-    ///
-    /// Supported API versions: 0-1
-    pub fn with_voter_id(mut self, value: i32) -> Self {
-        self.voter_id = value;
-        self
-    }
-    /// Sets `voter_directory_id` to the passed value.
-    ///
-    /// The directory id of the voter getting added to the topic partition.
-    ///
-    /// Supported API versions: 0-1
-    pub fn with_voter_directory_id(mut self, value: Uuid) -> Self {
-        self.voter_directory_id = value;
-        self
-    }
-    /// Sets `listeners` to the passed value.
-    ///
-    /// The endpoints that can be used to communicate with the voter.
-    ///
-    /// Supported API versions: 0-1
-    pub fn with_listeners(mut self, value: Vec<Listener>) -> Self {
-        self.listeners = value;
-        self
-    }
-    /// Sets `ack_when_committed` to the passed value.
-    ///
-    /// When true, return a response after the new voter set is committed. Otherwise, return after the leader writes the changes locally.
+    /// The resource type.
     ///
     /// Supported API versions: 1
-    pub fn with_ack_when_committed(mut self, value: bool) -> Self {
-        self.ack_when_committed = value;
+    pub fn with_resource_type(mut self, value: i8) -> Self {
+        self.resource_type = value;
         self
     }
     /// Sets unknown_tagged_fields to the passed value.
@@ -122,23 +66,15 @@ impl AddRaftVoterRequest {
     }
 }
 
-#[cfg(feature = "client")]
-impl Encodable for AddRaftVoterRequest {
+#[cfg(feature = "broker")]
+impl Encodable for ConfigResource {
     fn encode<B: ByteBufMut>(&self, buf: &mut B, version: i16) -> Result<()> {
         if version < 0 || version > 1 {
             bail!("specified version not supported by this message type");
         }
-        types::CompactString.encode(buf, &self.cluster_id)?;
-        types::Int32.encode(buf, &self.timeout_ms)?;
-        types::Int32.encode(buf, &self.voter_id)?;
-        types::Uuid.encode(buf, &self.voter_directory_id)?;
-        types::CompactArray(types::Struct { version }).encode(buf, &self.listeners)?;
+        types::CompactString.encode(buf, &self.resource_name)?;
         if version >= 1 {
-            types::Boolean.encode(buf, &self.ack_when_committed)?;
-        } else {
-            if !self.ack_when_committed {
-                bail!("A field is set that is not available on the selected protocol version");
-            }
+            types::Int8.encode(buf, &self.resource_type)?;
         }
         let num_tagged_fields = self.unknown_tagged_fields.len();
         if num_tagged_fields > std::u32::MAX as usize {
@@ -154,18 +90,9 @@ impl Encodable for AddRaftVoterRequest {
     }
     fn compute_size(&self, version: i16) -> Result<usize> {
         let mut total_size = 0;
-        total_size += types::CompactString.compute_size(&self.cluster_id)?;
-        total_size += types::Int32.compute_size(&self.timeout_ms)?;
-        total_size += types::Int32.compute_size(&self.voter_id)?;
-        total_size += types::Uuid.compute_size(&self.voter_directory_id)?;
-        total_size +=
-            types::CompactArray(types::Struct { version }).compute_size(&self.listeners)?;
+        total_size += types::CompactString.compute_size(&self.resource_name)?;
         if version >= 1 {
-            total_size += types::Boolean.compute_size(&self.ack_when_committed)?;
-        } else {
-            if !self.ack_when_committed {
-                bail!("A field is set that is not available on the selected protocol version");
-            }
+            total_size += types::Int8.compute_size(&self.resource_type)?;
         }
         let num_tagged_fields = self.unknown_tagged_fields.len();
         if num_tagged_fields > std::u32::MAX as usize {
@@ -181,21 +108,17 @@ impl Encodable for AddRaftVoterRequest {
     }
 }
 
-#[cfg(feature = "broker")]
-impl Decodable for AddRaftVoterRequest {
+#[cfg(feature = "client")]
+impl Decodable for ConfigResource {
     fn decode<B: ByteBuf>(buf: &mut B, version: i16) -> Result<Self> {
         if version < 0 || version > 1 {
             bail!("specified version not supported by this message type");
         }
-        let cluster_id = types::CompactString.decode(buf)?;
-        let timeout_ms = types::Int32.decode(buf)?;
-        let voter_id = types::Int32.decode(buf)?;
-        let voter_directory_id = types::Uuid.decode(buf)?;
-        let listeners = types::CompactArray(types::Struct { version }).decode(buf)?;
-        let ack_when_committed = if version >= 1 {
-            types::Boolean.decode(buf)?
+        let resource_name = types::CompactString.decode(buf)?;
+        let resource_type = if version >= 1 {
+            types::Int8.decode(buf)?
         } else {
-            true
+            16
         };
         let mut unknown_tagged_fields = BTreeMap::new();
         let num_tagged_fields = types::UnsignedVarInt.decode(buf)?;
@@ -206,32 +129,24 @@ impl Decodable for AddRaftVoterRequest {
             unknown_tagged_fields.insert(tag as i32, unknown_value);
         }
         Ok(Self {
-            cluster_id,
-            timeout_ms,
-            voter_id,
-            voter_directory_id,
-            listeners,
-            ack_when_committed,
+            resource_name,
+            resource_type,
             unknown_tagged_fields,
         })
     }
 }
 
-impl Default for AddRaftVoterRequest {
+impl Default for ConfigResource {
     fn default() -> Self {
         Self {
-            cluster_id: Some(Default::default()),
-            timeout_ms: 0,
-            voter_id: 0,
-            voter_directory_id: Uuid::nil(),
-            listeners: Default::default(),
-            ack_when_committed: true,
+            resource_name: Default::default(),
+            resource_type: 16,
             unknown_tagged_fields: BTreeMap::new(),
         }
     }
 }
 
-impl Message for AddRaftVoterRequest {
+impl Message for ConfigResource {
     const VERSIONS: VersionRange = VersionRange { min: 0, max: 1 };
     const DEPRECATED_VERSIONS: Option<VersionRange> = None;
 }
@@ -239,52 +154,52 @@ impl Message for AddRaftVoterRequest {
 /// Valid versions: 0-1
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
-pub struct Listener {
-    /// The name of the endpoint.
+pub struct ListConfigResourcesResponse {
+    /// The duration in milliseconds for which the request was throttled due to a quota violation, or zero if the request did not violate any quota.
     ///
     /// Supported API versions: 0-1
-    pub name: StrBytes,
+    pub throttle_time_ms: i32,
 
-    /// The hostname.
+    /// The error code, or 0 if there was no error.
     ///
     /// Supported API versions: 0-1
-    pub host: StrBytes,
+    pub error_code: i16,
 
-    /// The port.
+    /// Each config resource in the response.
     ///
     /// Supported API versions: 0-1
-    pub port: u16,
+    pub config_resources: Vec<ConfigResource>,
 
     /// Other tagged fields
     pub unknown_tagged_fields: BTreeMap<i32, Bytes>,
 }
 
-impl Listener {
-    /// Sets `name` to the passed value.
+impl ListConfigResourcesResponse {
+    /// Sets `throttle_time_ms` to the passed value.
     ///
-    /// The name of the endpoint.
+    /// The duration in milliseconds for which the request was throttled due to a quota violation, or zero if the request did not violate any quota.
     ///
     /// Supported API versions: 0-1
-    pub fn with_name(mut self, value: StrBytes) -> Self {
-        self.name = value;
+    pub fn with_throttle_time_ms(mut self, value: i32) -> Self {
+        self.throttle_time_ms = value;
         self
     }
-    /// Sets `host` to the passed value.
+    /// Sets `error_code` to the passed value.
     ///
-    /// The hostname.
+    /// The error code, or 0 if there was no error.
     ///
     /// Supported API versions: 0-1
-    pub fn with_host(mut self, value: StrBytes) -> Self {
-        self.host = value;
+    pub fn with_error_code(mut self, value: i16) -> Self {
+        self.error_code = value;
         self
     }
-    /// Sets `port` to the passed value.
+    /// Sets `config_resources` to the passed value.
     ///
-    /// The port.
+    /// Each config resource in the response.
     ///
     /// Supported API versions: 0-1
-    pub fn with_port(mut self, value: u16) -> Self {
-        self.port = value;
+    pub fn with_config_resources(mut self, value: Vec<ConfigResource>) -> Self {
+        self.config_resources = value;
         self
     }
     /// Sets unknown_tagged_fields to the passed value.
@@ -299,15 +214,15 @@ impl Listener {
     }
 }
 
-#[cfg(feature = "client")]
-impl Encodable for Listener {
+#[cfg(feature = "broker")]
+impl Encodable for ListConfigResourcesResponse {
     fn encode<B: ByteBufMut>(&self, buf: &mut B, version: i16) -> Result<()> {
         if version < 0 || version > 1 {
             bail!("specified version not supported by this message type");
         }
-        types::CompactString.encode(buf, &self.name)?;
-        types::CompactString.encode(buf, &self.host)?;
-        types::UInt16.encode(buf, &self.port)?;
+        types::Int32.encode(buf, &self.throttle_time_ms)?;
+        types::Int16.encode(buf, &self.error_code)?;
+        types::CompactArray(types::Struct { version }).encode(buf, &self.config_resources)?;
         let num_tagged_fields = self.unknown_tagged_fields.len();
         if num_tagged_fields > std::u32::MAX as usize {
             bail!(
@@ -322,9 +237,10 @@ impl Encodable for Listener {
     }
     fn compute_size(&self, version: i16) -> Result<usize> {
         let mut total_size = 0;
-        total_size += types::CompactString.compute_size(&self.name)?;
-        total_size += types::CompactString.compute_size(&self.host)?;
-        total_size += types::UInt16.compute_size(&self.port)?;
+        total_size += types::Int32.compute_size(&self.throttle_time_ms)?;
+        total_size += types::Int16.compute_size(&self.error_code)?;
+        total_size +=
+            types::CompactArray(types::Struct { version }).compute_size(&self.config_resources)?;
         let num_tagged_fields = self.unknown_tagged_fields.len();
         if num_tagged_fields > std::u32::MAX as usize {
             bail!(
@@ -339,15 +255,15 @@ impl Encodable for Listener {
     }
 }
 
-#[cfg(feature = "broker")]
-impl Decodable for Listener {
+#[cfg(feature = "client")]
+impl Decodable for ListConfigResourcesResponse {
     fn decode<B: ByteBuf>(buf: &mut B, version: i16) -> Result<Self> {
         if version < 0 || version > 1 {
             bail!("specified version not supported by this message type");
         }
-        let name = types::CompactString.decode(buf)?;
-        let host = types::CompactString.decode(buf)?;
-        let port = types::UInt16.decode(buf)?;
+        let throttle_time_ms = types::Int32.decode(buf)?;
+        let error_code = types::Int16.decode(buf)?;
+        let config_resources = types::CompactArray(types::Struct { version }).decode(buf)?;
         let mut unknown_tagged_fields = BTreeMap::new();
         let num_tagged_fields = types::UnsignedVarInt.decode(buf)?;
         for _ in 0..num_tagged_fields {
@@ -357,32 +273,32 @@ impl Decodable for Listener {
             unknown_tagged_fields.insert(tag as i32, unknown_value);
         }
         Ok(Self {
-            name,
-            host,
-            port,
+            throttle_time_ms,
+            error_code,
+            config_resources,
             unknown_tagged_fields,
         })
     }
 }
 
-impl Default for Listener {
+impl Default for ListConfigResourcesResponse {
     fn default() -> Self {
         Self {
-            name: Default::default(),
-            host: Default::default(),
-            port: 0,
+            throttle_time_ms: 0,
+            error_code: 0,
+            config_resources: Default::default(),
             unknown_tagged_fields: BTreeMap::new(),
         }
     }
 }
 
-impl Message for Listener {
+impl Message for ListConfigResourcesResponse {
     const VERSIONS: VersionRange = VersionRange { min: 0, max: 1 };
     const DEPRECATED_VERSIONS: Option<VersionRange> = None;
 }
 
-impl HeaderVersion for AddRaftVoterRequest {
+impl HeaderVersion for ListConfigResourcesResponse {
     fn header_version(version: i16) -> i16 {
-        2
+        1
     }
 }

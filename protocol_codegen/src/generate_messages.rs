@@ -192,18 +192,23 @@ pub fn run(messages_module_dir: &str, mut input_file_paths: Vec<PathBuf>) -> Res
     writeln!(m, "    pub fn valid_versions(&self) -> VersionRange {{")?;
     writeln!(m, "        match self {{")?;
     for (api_key, request_type) in request_types.iter() {
-        let valid_versions = api_key_to_valid_version
-            .get(api_key)
-            .unwrap()
-            .range()
-            .unwrap();
-        writeln!(
-            m,
-            "ApiKey::{} => VersionRange {{ min: {}, max: {} }},",
-            request_type.replace("Request", ""),
-            valid_versions.start(),
-            valid_versions.end(),
-        )?;
+        if let Some(valid_versions) = api_key_to_valid_version.get(api_key).unwrap().range() {
+            writeln!(
+                m,
+                "ApiKey::{} => VersionRange {{ min: {}, max: {} }},",
+                request_type.replace("Request", ""),
+                valid_versions.start(),
+                valid_versions.end(),
+            )?;
+        } else {
+            writeln!(
+                m,
+                "ApiKey::{} => VersionRange {{ min: {}, max: {} }},",
+                request_type.replace("Request", ""),
+                0,
+                0,
+            )?;
+        }
     }
     writeln!(m, "        }}")?;
     writeln!(m, "    }}")?;

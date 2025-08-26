@@ -33,15 +33,15 @@ fn main() -> Result<(), Error> {
     // Checkout the release commit
     // https://github.com/apache/kafka/releases/tag/4.0.0
     // checking out a tag with git2 is annoying -- we pin to the tag's commit sha instead
-    let release_commit = "74d93adadb74ff682882b31dde03fea07fb4af97";
-    println!("Checking out release {}", release_commit);
-    let oid = Oid::from_str(release_commit).unwrap();
-    let commit = repo
-        .find_commit(oid)
-        .expect("Could not find release commit!")
-        .into_object();
-    repo.checkout_tree(&commit, None).unwrap();
-    repo.set_head_detached(commit.id()).unwrap();
+    // let release_commit = "74d93adadb74ff682882b31dde03fea07fb4af97";
+    // println!("Checking out release {}", release_commit);
+    // let oid = Oid::from_str(release_commit).unwrap();
+    // let commit = repo
+    //     .find_commit(oid)
+    //     .expect("Could not find release commit!")
+    //     .into_object();
+    // repo.checkout_tree(&commit, None).unwrap();
+    // repo.set_head_detached(commit.id()).unwrap();
 
     // Clear output directory
     for file in fs::read_dir(messages_module_dir)? {
